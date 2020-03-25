@@ -44,8 +44,10 @@ app.use((err, req, res) => {
     res.locals.error = req.app.get('env') === 'development' ? err : {};
     res.status(err.status || 500);
     res.render('error');
-})
+});
 
 const server = app.listen(app.get('port'),() => {
     console.log(app.get('port'), '번 포트에서 대기중');
-})
+});
+
+webSocket(server, app, session); // 웹 소켓 서버와 익스프레스 서버 연결
