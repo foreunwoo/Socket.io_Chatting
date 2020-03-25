@@ -1,29 +1,29 @@
-const WebSocket = require('ws');
+const SocketIO = require('socket.io');
 
 module.exports = (server) => {
-  const wss = new WebSocket.Server({ server });
+  const io = SocketIO(server, { path: '/socket.io' });
 
-  wss.on('connection', (ws, req) => { //접속할 때마다 커넥션이 맺어짐 
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    // req.headers['x-forwarded-for'] 프록시 거치기 전의 아이피
-    // req.connection.remoteAddress 최종 아이피
-    console.log('클라이언트 접속', ip);
-    ws.on('message', (message) => { //메시지 보낼 때 메시지 이벤트
-      console.log(message);
+  io.on('connection', (socket) => {
+    const req = socket.request;
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress; // 프록시일 때, 그냥일 때
+    console.log('새로운 클라이언트 접속!', ip, socket.id, req.id);
+    
+    socket.on('disconnect', () => {
+      console.log('클라이언트 접속 해제', ip, socket.id);
+      clearInterval(socket.interval);
     });
-    ws.on('error', (error) => { //에러 이벤트
+    socket.on('error', (error) => {
       console.error(error);
     });
-    ws.on('close', () => {
-      console.log('클라이언트 접속 해제', ip);
-      clearInterval(ws.interval); // 접속 종료시 클라이언트로 메시지를 보내는 것도 종료함
+    socket.on('message', (data) => {
+      console.log(data);
     });
-    const interval = setInterval(() => {
-      if (ws.readyState === ws.OPEN) { // ws.CONNECTING, ws.CLOSING, ws.CLOSED
-        ws.send('서버에서 클라이언트로 메시지를 보냅니다.');
-      }
-    }, 3001);
-    ws.interval = interval;
+    socket.on('reply', (data) => {
+      console.log(data);
+    });
+    socket.interval = setInterval(() => {
+      socket.emit('news', 'Hello Socket.IO'); // 키, 값
+    }, 3000);
   });
 };
 
