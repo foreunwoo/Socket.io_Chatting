@@ -10,6 +10,7 @@ html
       // 웹소켓 스크립트 부분
       var socket = io.connect('http://localhost:8005', {
         path: '/socket.io',
+        transports: ['websocket'], // 웹 소켓 지원 여부를 묻지 않음
       });
       socket.on('news', function(data) {
         console.log(data);
