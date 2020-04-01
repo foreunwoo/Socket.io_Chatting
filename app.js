@@ -38,7 +38,7 @@ app.use(flash());
 app.use((req, res, next) => {
     if (!req.session.color) {
         const colorHash = new ColorHash();
-        req.session.color = colorHash.hex(req.sessionId); // 세션에 컬러 저장
+        req.session.color = colorHash.hex(req.sessionID); // 세션에 컬러 저장
     }
     next();
 });
