@@ -27,7 +27,7 @@ block content
     var socket = io.connect('http://localhost:8005/room', {
       path: '/socket.io'
     });
-    socket.on('newRoom', function (data) {
+    socket.on('newRoom', function (data) { // 새로운 방이 생기는 이벤트 발생
       var tr = document.createElement('tr');
       var td = document.createElement('td');
       td.textContent = data.title;
@@ -53,7 +53,7 @@ block content
       tr.dataset.id = data._id;
       document.querySelector('table tbody').appendChild(tr);
     });
-    socket.on('removeRoom', function (data) {
+    socket.on('removeRoom', function (data) { // 아무도 없는 방은 사라지는 이벤트 발생
       document.querySelectorAll('tbody tr').forEach(function (tr) {
         if (tr.dataset.id === data) {
           tr.parentNode.removeChild(tr);
