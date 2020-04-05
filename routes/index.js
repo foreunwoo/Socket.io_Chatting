@@ -1,4 +1,7 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const Room = require('../schemas/room');
 const Chat = require('../schemas/chat');
@@ -65,7 +68,7 @@ router.get('/room/:id', async (req, res, next) => {
       return res.render('chat', {
         room,
         title: room.title,
-        chat,
+        chats,
         user: req.session.color, // 세션에 저장된 컬러를 사용
       });
     } catch (error) {
@@ -99,6 +102,41 @@ router.post('/room/:id/chat', async (req, res, next) => {
     await chat.save();
     req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
   } catch(error) {
+    console.error(error);
+    next(error);
+  }
+})
+
+fs.readdir('uploads', (error) => { 
+  if (error) {
+    console.error('uploads 폴더가 없어 uploads 폴더를 생성합니다.');
+    fs.mkdirSync('uploads');
+  }
+});
+const uploads = multer({ // multer 설정
+  storage: multer.diskStorage({
+    destination(req, file, cb) {
+      cb(null, 'uploads/');
+    },
+    filename(req, file, cb) {
+      const ext = path.extname(file.originalname); // .extname() 파일의 확장자 이름
+      cb(null, path.basename(file.originalname, ext) + new Date().valueOf() + ext); // .basename() 파일의 기본 이름
+    },
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }, //10MB로 용량 제한
+})
+
+router.post('/room/:id/gif', uploads.single('gif'), async (req, res, next) => {
+  try {
+    const chat = new Chat({
+      room: req.params.id,
+      user: req.session.color,
+      gif: req.body.filename,
+    }) 
+    await chat.save();
+    res.send('ok');
+    req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+  } catch (error) {
     console.error(error);
     next(error);
   }
