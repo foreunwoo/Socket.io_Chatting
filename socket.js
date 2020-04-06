@@ -33,6 +33,7 @@ module.exports = (server, app, sessionMiddleware) => {
    socket.to(roomId).emit('join', { // 메세지 전송
      user: 'system',
      chat: `${req.session.color}님이 입장하셨습니다.`,
+     number: socket.adapter.rooms[roomId].length,
   });
   socket.on('disconnect', () => {
     console.log('chat 네임스페이스 접속 해제');
@@ -52,6 +53,7 @@ module.exports = (server, app, sessionMiddleware) => {
       socket.to(roomId).emit('exit', {
         user: 'system',
         chat: `${req.session.color}님이 퇴장하셨습니다.`,
+        number: socket.adapter.rooms[roomId].length,
       });
     }
   });
