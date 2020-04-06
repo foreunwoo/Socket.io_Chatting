@@ -63,12 +63,14 @@ router.get('/room/:id', async (req, res, next) => {
         req.flash('roomError', '허용 인원 초과.');
         return res.redirect('/');
       }
+      console.log(rooms);
       // 해당 방에 대한 채팅 내용을 넣어줌
       const chats = await Chat.find({ room: room._id }).sort('createdAt');
       return res.render('chat', {
         room,
         title: room.title,
         chats,
+        number: (rooms && rooms[req.params.id] && rooms[req.params.id].length + 1) || 1,
         user: req.session.color, // 세션에 저장된 컬러를 사용
       });
     } catch (error) {
