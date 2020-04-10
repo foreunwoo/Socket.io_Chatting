@@ -102,7 +102,14 @@ router.post('/room/:id/chat', async (req, res, next) => {
       chat: req.body.chat,
     }) 
     await chat.save();
-    req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+    res.send('ok');
+  //  req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+    req.app.get('io').of('/chat').to(req.params.id).emit('chat', {
+      socket: req.body.sid,
+      room: req.params.id,
+      user: req.session.color,
+      chat: req.body.chat,
+    });
   } catch(error) {
     console.error(error);
     next(error);
@@ -137,11 +144,40 @@ router.post('/room/:id/gif', uploads.single('gif'), async (req, res, next) => {
     }) 
     await chat.save();
     res.send('ok');
-    req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+  //  req.app.get('io').of('/chat').to(req.params.id).emit('chat', chat);
+    req.app.get('io').of('/chat').to(req.params.id).emit('chat', {
+      socket: req.body.sid,
+      room: req.params.id,
+      user: req.session.color,
+      gif: req.file.filename,
+    });
   } catch (error) {
     console.error(error);
     next(error);
   }
 })
+
+router.post('/room/:id/sys', async (req, res, next) => { // 시스템 메시지를 저장하는 라우터
+  try {
+    const chat = req.body.type === 'join'
+    ? `${req.session.color}님이 입장하셨습니다.`
+    : `${req.session.color}님이 퇴장하셨습니다.`
+    const sys = new Chat({
+      room: req.params.id,
+      user: 'system',
+      chat,
+    });
+    await sys.save(); // 몽고 디비에 저장
+    req.app.get('io').of('/chat').to(req.params.id).emit(req.body.type, {
+      user: 'system',
+      chat,
+      number: req.app.get('io').of('/chat').adapter.rooms[req.params.id].length,
+    });
+    res.send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 module.exports = router;
