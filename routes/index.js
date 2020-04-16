@@ -63,6 +63,7 @@ router.get('/room/:id', async (req, res, next) => {
         req.flash('roomError', '허용 인원 초과.');
         return res.redirect('/');
       }
+      // 강퇴 당한 사람인지
       console.log(rooms);
       // 해당 방에 대한 채팅 내용을 넣어줌
       const chats = await Chat.find({ room: room._id }).sort('createdAt');
@@ -179,5 +180,8 @@ router.post('/room/:id/sys', async (req, res, next) => { // 시스템 메시지�
     next(error);
   }
 });
+
+// router ban 
+// 강퇴 당한 사람들의 목록
 
 module.exports = router;
