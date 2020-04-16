@@ -50,6 +50,8 @@ module.exports = (server, app, sessionMiddleware) => {
     console.log('chat 네임스페이스 접속 해제');
     socket.leave(roomId); // 방 나가기
     // 방에 인원이 하나도 없으면 방을 없애기
+    // 방장이 나간 경우 방 인원 중 랜덤 한명 골라서 방장 위임
+    // 몽고 디비로 room 스키마 owner update
     const currentRoom = socket.adapter.rooms[roomId]; // 현재 방에 대한 정보 받아오기
     const userCount = currentRoom ? currentRoom.length : 0; // currentRoom.length으로 사용자 수를 받아옴
     if (userCount === 0) {
@@ -77,6 +79,9 @@ module.exports = (server, app, sessionMiddleware) => {
 
   socket.on('dm', (data) => {
     socket.to(data.target).emit('dm', data); // socket.to(개인의 소켓).emit
+  });
+  socket.on('ban', (data) => {
+    socket.to(data.id).emit('ban');
   });
 });
 };
