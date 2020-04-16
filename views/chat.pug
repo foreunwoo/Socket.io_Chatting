@@ -6,6 +6,9 @@ block content
   #number
     | 참여자 수: 
     #number-count= number
+  #number
+    | 방장: 
+    span#room-owner(style='color: '+ room.owner)= room.owner
   fieldset
     legend 채팅 내용
     #chat-list
@@ -73,8 +76,12 @@ block content
         dm.addEventListener('click', sendDM);
         name.appendChild(dm);
       }
-    //  name.dataset.socket = data.socket;
-    //  name.addEventListener('click', ban);
+      var banBtn = document.createElement('button');
+      banBtn.className = 'ban';
+      banBtn.textContent = '강퇴';
+      banBtn.dataset.socket = data.socket;
+      banBtn.addEventListener('click', ban);
+      name.appendChild(banBtn);
       div.appendChild(name);
       if (data.chat) {
         var chat = document.createElement('div');
@@ -130,4 +137,22 @@ block content
     });
     socket.on('dm', function (data) {
       alert(data.from + '님에게서 귓속말이 도착했습니다.' + data.msg);
+    });
+    function ban(e) {
+      var id = e.target.dataset.socket;
+      var name = e.target.textContent;
+      var owner = document.getElementById('room-owner').textContent;
+      console.log('#{user}', owner);
+      if ('#{user}' === owner && name !== owner) {
+        if (confirm(`${name}를 강퇴하시겠습니까?`)) {
+          socket.emit('ban', { id });
+        }
+      }
+    }
+    Array.prototype.forEach.call(document.querySelectorAll('.ban'), function () {
+      el.addEventListener('click', ban);
+    });
+    socket.on('ban', function() {
+      alert('강퇴되었습니다.');
+      location.href = '/';
     });
